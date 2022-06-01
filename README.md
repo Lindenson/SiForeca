@@ -1,24 +1,20 @@
-# siforeca
+# SIFORECA 
 
-## Project setup
-```
-npm install
-```
+## To Start
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+NOT A HARD JOB:
 
-### Compiles and minifies for production
-```
-npm run build
-```
+ - install java 17
+ - install maven
+ - build with "mvn package -Dmaven.test.skip"
+ - put a jar file (from targer folder generated) with name SiForeca-0.1.jar into this root folder
 
-### Lints and fixes files
-```
-npm run lint
-```
+## For lazy people
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+FOR LAZY PEOPLE, ALL THE PREVIOUS STEPS HAVE BEEN DONE 
+
+YOU JUST:
+ 
+ - install Docker + Docker Compose
+ - run "to_run_site" script
+ - vualá

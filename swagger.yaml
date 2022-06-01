@@ -1,0 +1,457 @@
+swagger: "2.0"
+info:
+  description: "Siforeca is a scientific database and forecasting system. Designed by IEP NAS of Ukraine"
+  version: "1.0"
+  title: "SiForeca"
+  termsOfService: "siforeca.net"
+  contact:
+    email: "siforeca@gmail.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "siforeca.net"
+basePath: "/v1"
+tags:
+  - name: "indicator"
+    description: "economic indicator"
+  - name: "country"
+    description: "observed country"
+  - name: "year"
+    description: "observed year"
+schemes:
+  - "http"
+paths:
+  /indicator/{iname}:
+    get:
+      tags:
+        - "indicator"
+      summary: "Get a specified indicator for a set of countryies"
+      description: "One indicator for a group of countries"
+      operationId: "getInd"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: query
+          name: "sector"
+          description: "Sector code"
+          required: true
+          type: string
+        - in: query
+          name: "activity"
+          description: "Activity code"
+          required: true
+          type: string
+        - in: path
+          name: "iname"
+          description: "Indicator name"
+          required: true
+          type: string
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/MapOfCountries'
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+  /indicators:
+    get:
+      tags:
+        - "indicator"
+      summary: "List of indicators"
+      description: "List of all indicators in a database"
+      operationId: "getInds"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CodeAndName'
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+  /country/{cname}:
+    get:
+      tags:
+        - "country"
+      summary: "Get a set of indicators for a specified country"
+      description: "Group of indicators for a specified country"
+      operationId: "getCountr"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: query
+          name: "sector"
+          description: "Sector code"
+          required: true
+          type: string
+        - in: query
+          name: "activity"
+          description: "Activity code"
+          required: true
+          type: string
+        - in: path
+          name: "cname"
+          description: "Country name"
+          required: true
+          type: string
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/MapOfIndicators'
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+  /countries:
+    get:
+      tags:
+        - "country"
+      summary: "List of countries"
+      description: "List of all countries in a database"
+      operationId: "getCountrs"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CodeAndName'
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+  /year/{date}:
+    get:
+      tags:
+        - "year"
+      summary: "Get a set of indicators for all countries for a specified year"
+      description: "Group of indicators for all countries for period of time"
+      operationId: "getYear"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: query
+          name: "sector"
+          description: "Sector code"
+          required: true
+          type: string
+        - in: query
+          name: "activity"
+          description: "Activity code"
+          required: true
+          type: string
+        - in: path
+          name: "date"
+          description: "Year of observation"
+          required: true
+          type: integer
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/MapOfTime'
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+  /years:
+    get:
+      tags:
+        - "year"
+      summary: "List of years"
+      description: "List of years in a database"
+      operationId: "getYears"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              type: integer
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+
+  /indicators/sector:
+    get:
+      tags:
+        - "indicator"
+      summary: "Get a map of sector and its activities"
+      description: "Map activities to sector"
+      operationId: "getActivity"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MapOfActivities'
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+
+  /sector:
+    get:
+      tags:
+        - "info"
+      summary: "List of sectors"
+      description: "List of all sectors in a database"
+      operationId: "getSectors"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CodeAndName'
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+
+  /activities:
+    get:
+      tags:
+        - "info"
+      summary: "List of activities"
+      description: "List of all activities in a database"
+      operationId: "getActivities"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CodeAndName'
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+
+
+
+
+definitions:
+  MapOfIndicators:
+    type: array
+    description: Array of Indicators for selected country
+    items:
+      type: object
+      description: Indicator for selected country
+      properties:
+        iname:
+          type: string
+          description: Indicator name
+        sname:
+          type: string
+          description: Sector name
+        aname:
+          type: string
+          description: Activity name
+        idata:
+          type: array
+          description: Time series
+          items:
+              $ref: '#/definitions/YearAndInd'
+
+  MapOfCountries:
+    type: array
+    description: Array of Countries for selected indicator
+    items:
+      type: object
+      description: Country for selected indicator
+      properties:
+        cname:
+          type: string
+          description: Country's name
+        sname:
+          type: string
+          description: Sector name
+        aname:
+          type: string
+          description: Activity name
+        cdata:
+          type: array
+          description: Time series
+          items:
+            $ref: '#/definitions/YearAndInd'
+
+  MapOfTime:
+    type: array
+    description: Array of Indicators of all Countries for selected year
+    items:
+      type: object
+      description: Indicator for selected year
+      properties:
+        cname:
+          type: string
+          description: Country name
+        sname:
+          type: string
+          description: Sector name
+        aname:
+          type: string
+          description: Actibity name
+        cdata:
+          type: array
+          description: Data matrix
+          items:
+            $ref: '#/definitions/DataAndInd'
+
+  YearAndInd:
+    type: object
+    description: Year plus Indicator
+    properties:
+      year:
+        type: integer
+        description: Year
+      indicator:
+        type: number
+        description: Indicator
+      branch:
+        type: string
+        description: Branch
+      unit:
+        type: string
+        description: Unit
+
+  DataAndInd:
+    type: object
+    description: Data plus Indicator
+    properties:
+      iname:
+        type: string
+        description: Indicator name
+      indicator:
+        type: number
+        description: Indicator
+      branch:
+        type: string
+        description: Branch
+      unit:
+        type: string
+        description: Unit
+
+  CodeAndName:
+    type: object
+    description: Code and Name
+    properties:
+      code:
+        type: string
+        description: Code
+      name:
+        type: string
+        description: Name
+
+  MapOfActivities:
+    type: object
+    description: Activities mapped to sector
+    properties:
+      indicator:
+        type: string
+      sectors:
+        type: array
+        description: Sector
+        items:
+          type: object
+          properties:
+             sname:
+                type: string
+             activities:
+                type: array
+                items:
+                  type: string
+
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"

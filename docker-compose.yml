@@ -1,0 +1,101 @@
+version: "3.9"
+services:
+  psql:
+    image:
+      postgres
+    ports:
+      - "5432:5432"
+    container_name: psql
+    hostname: psql  
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=misha
+    volumes:
+      - ./my.sql:/docker-entrypoint-initdb.d/init.sql
+        ./fordump:/root/fordump
+    restart: 
+        always
+    deploy:
+       resources:
+         limits:
+           cpus: '1.5'
+           memory: 400M
+         reservations:
+           cpus: '1.5'
+           memory: 300M
+
+
+  redis:
+     image: "redis:alpine"
+     command: redis-server --requirepass danlee
+     ports:
+       - "6379:6379"
+     volumes:
+       - $PWD/redis-data:/var/lib/redis
+       - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+     environment:
+       - REDIS_REPLICATION_MODE=master
+     hostname: redis
+     container_name: redis
+     restart: 
+               always
+     deploy:
+       resources:
+         limits:
+           cpus: '0.5'
+           memory: 100M
+         reservations:
+           cpus: '0.5'
+           memory: 80M
+
+
+
+  java:
+    image:
+      openjdk:17
+    container_name: java
+    hostname: java
+    restart: 
+         always
+    depends_on:
+      - psql
+      - redis
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./SiForeca-1.0.jar:/SiForeca/app.jar
+    command: ['java', '--enable-preview', '-Xms100m', '-Xmx400m', '-jar', '/SiForeca/app.jar']
+    deploy:
+       resources:
+         limits:
+           cpus: '4'
+           memory: 900M
+         reservations:
+           cpus: '4444'
+           memory: 700M
+
+
+  nginx:
+     container_name: nginx
+     image: nginx
+     restart: always
+     ports:
+     - 80:80
+     - 443:443
+     volumes:
+       - ./ngconf:/etc/nginx/conf.d
+       - ./www:/var/www/media
+     depends_on:
+     - java
+     restart: 
+         always
+     deploy:
+       resources:
+         limits:
+           cpus: '1'
+           memory: 100M
+         reservations:
+           cpus: '1'
+           memory: 100M
+
+
