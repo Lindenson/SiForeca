@@ -14,7 +14,7 @@ import javax.validation.constraints.*;
  */
 @Schema(description = "Year plus Indicator")
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2022-06-25T20:50:01.785971770+02:00[Europe/Bratislava]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2022-06-26T08:46:28.910341752+02:00[Europe/Bratislava]")
 
 
 public class YearAndInd   {
