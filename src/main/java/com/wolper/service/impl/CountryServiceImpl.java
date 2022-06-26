@@ -30,7 +30,7 @@ public class CountryServiceImpl implements com.wolper.service.CountryService {
         List<CodeAndName> resL = new ArrayList<>();
         try {
             List<Country> all = country.findAll();
-            resL=resposneService.allReplacedhelper(lang, all);
+            resL=resposneService.allReplacedHelper(lang, all);
         }
         catch (Exception ex) {
             log.error(ex.getMessage());

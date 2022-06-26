@@ -30,7 +30,7 @@ public class ActivityServiceImpl implements com.wolper.service.ActivityService {
         List<CodeAndName> resL = new ArrayList<>();
         try {
             List<Activity> all = activityRepo.findAll();
-            resL=resposneService.allReplacedhelper(lang, all);
+            resL=resposneService.allReplacedHelper(lang, all);
         }
         catch (Exception ex) {
             log.error(ex.getMessage());

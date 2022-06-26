@@ -19,8 +19,8 @@
 /home/wol/backend/src/main/java/com/wolper/repositories/UserRepository.java
 /home/wol/backend/target/generated-sources/swagger/src/main/java/model/MapOfCountries.java
 /home/wol/backend/src/main/java/com/wolper/dto/Country.java
-/home/wol/backend/target/generated-sources/swagger/src/main/java/model/MapOfActivities.java
 /home/wol/backend/target/generated-sources/swagger/src/main/java/model/DataAndInd.java
+/home/wol/backend/target/generated-sources/swagger/src/main/java/model/ForTreeListItem.java
 /home/wol/backend/src/main/java/com/wolper/repositories/IPblockList.java
 /home/wol/backend/target/generated-sources/swagger/src/main/java/model/MapOfTimeInner.java
 /home/wol/backend/src/main/java/com/wolper/dto/Sector.java
@@ -28,7 +28,6 @@
 /home/wol/backend/src/main/java/com/wolper/controllers/swagger/SwaggerController.java
 /home/wol/backend/src/main/java/com/wolper/service/impl/EMailServiceImpl.java
 /home/wol/backend/target/generated-sources/swagger/src/main/java/model/MapOfIndicators.java
-/home/wol/backend/target/generated-sources/swagger/src/main/java/model/MapOfActivitiesSectors.java
 /home/wol/backend/src/main/java/com/wolper/dto/IPBlocked.java
 /home/wol/backend/src/main/java/com/wolper/service/impl/UserServiceImpl.java
 /home/wol/backend/src/main/java/com/wolper/service/impl/ActivityServiceImpl.java
@@ -53,6 +52,7 @@
 /home/wol/backend/target/generated-sources/swagger/src/main/java/model/MapOfIndicatorsInner.java
 /home/wol/backend/src/main/java/com/wolper/dto/AppUser.java
 /home/wol/backend/src/main/java/com/wolper/dto/Activity.java
+/home/wol/backend/target/generated-sources/swagger/src/main/java/model/ForTreeList.java
 /home/wol/backend/target/generated-sources/swagger/src/main/java/api/YearsApi.java
 /home/wol/backend/src/main/java/com/wolper/service/impl/IndicatorServiceImpl.java
 /home/wol/backend/target/generated-sources/swagger/src/main/java/model/YearAndInd.java
@@ -66,5 +66,6 @@
 /home/wol/backend/src/main/java/com/wolper/service/ActivityService.java
 /home/wol/backend/target/generated-sources/swagger/src/main/java/api/CountryApi.java
 /home/wol/backend/src/main/java/com/wolper/repositories/TokenRepository.java
+/home/wol/backend/target/generated-sources/swagger/src/main/java/model/ForTreeListEmptyItem.java
 /home/wol/backend/src/main/java/com/wolper/repositories/UnitRepo.java
 /home/wol/backend/target/generated-sources/swagger/src/main/java/api/SectorApi.java

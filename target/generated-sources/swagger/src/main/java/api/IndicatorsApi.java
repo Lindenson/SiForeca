@@ -6,7 +6,7 @@
 package api;
 
 import model.CodeAndName;
-import model.MapOfActivities;
+import model.ForTreeList;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -33,13 +33,13 @@ import javax.validation.constraints.*;
 import java.util.List;
 import java.util.Map;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2022-06-26T08:46:28.910341752+02:00[Europe/Bratislava]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2022-06-26T20:34:21.785972722+02:00[Europe/Bratislava]")
 @Validated
 public interface IndicatorsApi {
 
     @Operation(summary = "Get a map of sector and its activities", description = "Map activities to sector", tags={ "indicator" })
     @ApiResponses(value = { 
-        @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MapOfActivities.class)))),
+        @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ForTreeList.class))),
         
         @ApiResponse(responseCode = "405", description = "Invalid input"),
         
@@ -49,7 +49,7 @@ public interface IndicatorsApi {
     @RequestMapping(value = "/indicators/sector",
         produces = { "application/json" }, 
         method = RequestMethod.GET)
-    ResponseEntity<List<MapOfActivities>> getActivity();
+    ResponseEntity<ForTreeList> getActivity(@Parameter(in = ParameterIn.HEADER, description = "Interface" ,schema=@Schema()) @RequestHeader(value="Content-Language", required=false) String contentLanguage);
 
 
     @Operation(summary = "List of indicators", description = "List of all indicators in a database", tags={ "indicator" })

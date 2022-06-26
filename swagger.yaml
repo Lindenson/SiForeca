@@ -246,13 +246,17 @@ paths:
         - "application/json"
       produces:
         - "application/json"
+      parameters:
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
       responses:
         200:
           description: OK
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/MapOfActivities'
+            $ref: '#/definitions/ForTreeList'
         405:
           description: "Invalid input"
         500:
@@ -433,24 +437,36 @@ definitions:
         type: string
         description: Name
 
-  MapOfActivities:
+  ForTreeList:
+    type: array
+    items:
+      anyOf:
+        - $ref: '#/definitions/ForTreeListItem'
+        - $ref: '#/definitions/ForTreeListEmptyItem'
+
+
+  ForTreeListItem:
     type: object
-    description: Activities mapped to sector
+    description: Text for tree vew list
     properties:
-      indicator:
+      text:
         type: string
-      sectors:
-        type: array
-        description: Sector
-        items:
-          type: object
-          properties:
-             sname:
-                type: string
-             activities:
-                type: array
-                items:
-                  type: string
+        description: Item Name
+      items:
+        description: Array of internal items
+        $ref: '#/definitions/ForTreeList'
+
+  ForTreeListEmptyItem:
+    type: object
+    description: Text for tree vew list
+    properties:
+      text:
+        type: string
+        description: Item Name
+      id:
+        type: string
+        description: Item Index
+
 
 externalDocs:
   description: "Find out more about Swagger"

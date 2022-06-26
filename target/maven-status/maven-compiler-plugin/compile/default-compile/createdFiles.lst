@@ -5,6 +5,7 @@ com/wolper/security/JwtTokenFilter.class
 com/wolper/service/impl/ResposneServiceImpl.class
 com/wolper/controllers/JWTUserController.class
 com/wolper/repositories/ActivityRepo.class
+model/ForTreeListEmptyItem.class
 com/wolper/dto/UserBlocked.class
 com/wolper/dto/Indicator.class
 com/wolper/repositories/IndicatorRepo.class
@@ -16,7 +17,6 @@ com/wolper/service/CountryService.class
 model/YearAndInd.class
 com/wolper/security/SecurityConfig.class
 com/wolper/SiForeca.class
-model/MapOfActivitiesSectors.class
 api/YearsApi.class
 com/wolper/repositories/UserBlockList.class
 api/CountryApi.class
@@ -28,6 +28,7 @@ com/wolper/service/impl/CountryServiceImpl.class
 model/MapOfIndicatorsInner.class
 com/wolper/exceptions/EMailException.class
 com/wolper/repositories/SectorRepo.class
+model/ForTreeListItem.class
 com/wolper/service/Multilang.class
 com/wolper/dto/Grossbuch.class
 model/MapOfCountriesInner.class
@@ -55,6 +56,7 @@ com/wolper/repositories/UserRepository.class
 com/wolper/repositories/UnitRepo.class
 com/wolper/service/GrossbuchService.class
 com/wolper/repositories/IPblockList.class
+model/ForTreeList.class
 com/wolper/controllers/MainController.class
 com/wolper/service/impl/IndicatorServiceImpl.class
 com/wolper/repositories/TokenRepository.class
@@ -68,5 +70,4 @@ com/wolper/service/ResposneService.class
 com/wolper/configs/MailConfig.class
 api/CountriesApi.class
 model/MapOfTime.class
-model/MapOfActivities.class
 com/wolper/dto/AppUser.class

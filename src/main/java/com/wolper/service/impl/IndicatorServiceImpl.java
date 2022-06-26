@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -29,7 +31,7 @@ public class IndicatorServiceImpl implements com.wolper.service.IndicatorService
         List<CodeAndName> resL = new ArrayList<>();
         try {
             List<Indicator> all = indicator.findAll();
-            resL=resposneService.allReplacedhelper(lang, all);
+            resL=resposneService.allReplacedHelper(lang, all);
         }
         catch (Exception ex) {
             log.error(ex.getMessage());

@@ -1,11 +1,9 @@
 package com.wolper.service;
 
-import model.MapOfActivities;
-import model.MapOfCountries;
-import model.MapOfIndicators;
-import model.MapOfTime;
+import model.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface GrossbuchService {
     List<Integer> getAllYearsList();
@@ -16,5 +14,7 @@ public interface GrossbuchService {
 
     MapOfTime getDataForOneYear(Integer year, String sector, String activity);
 
-    List<MapOfActivities> getMappedSectorAndActivity();
+    Map<String, Map<String, List<String>>> getMappedSectorAndActivity();
+
+    ForTreeList getMappedSectorAndActivityForMenuTree(Map<String, Map<String, List<String>>> beforeResult);
 }

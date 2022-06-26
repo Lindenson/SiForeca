@@ -1,11 +1,9 @@
 package com.wolper.service;
 
-import model.CodeAndName;
-import model.MapOfCountries;
-import model.MapOfIndicators;
-import model.MapOfTime;
+import model.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ResposneService {
     void replaceIndName(MapOfIndicators mapI, Multilang.SLANG slang);
@@ -22,5 +20,7 @@ public interface ResposneService {
 
     void replaceASNames(Object start, Multilang.SLANG slang);
 
-    <T extends Multilang> List<CodeAndName> allReplacedhelper(String lang, List<T> all);
+    <T extends Multilang> List<CodeAndName> allReplacedHelper(String lang, List<T> all);
+
+    Map<String, Map<String, List<String>>> replaceAndSortForTreeList(Map<String, Map<String, List<String>>> initMap, Multilang.SLANG slang);
 }

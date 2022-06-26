@@ -3,36 +3,31 @@ package com.wolper.service.impl;
 import com.wolper.dto.*;
 import com.wolper.repositories.*;
 import com.wolper.service.Multilang;
+import com.wolper.service.ResposneService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
+import javax.validation.constraints.Max;
+import java.util.*;
+import java.util.stream.Collectors;
 import static com.wolper.service.Multilang.RU;
 import static com.wolper.service.Multilang.UA;
 
 
 @Slf4j
 @Service
-public class ResposneServiceImpl implements com.wolper.service.ResposneService {
+@AllArgsConstructor
+public class ResposneServiceImpl implements ResposneService {
 
-
-    @Autowired
-    IndicatorRepo indicatorRepo;
-    @Autowired
-    CountryRepo countryRepo;
-    @Autowired
-    UnitRepo unitRepo;
-    @Autowired
-    ActivityRepo activityRepo;
-    @Autowired
-    SectorRepo sectorRepo;
+    final IndicatorRepo indicatorRepo;
+    final CountryRepo countryRepo;
+    final UnitRepo unitRepo;
+    final ActivityRepo activityRepo;
+    final SectorRepo sectorRepo;
 
     @Override
     public void replaceIndName(MapOfIndicators mapI, Multilang.SLANG slang){
@@ -176,8 +171,7 @@ public class ResposneServiceImpl implements com.wolper.service.ResposneService {
     }
 
     @Override
-    public <T extends Multilang> List<CodeAndName> allReplacedhelper(String lang, List<T> all){
-        List<CodeAndName> resL = new ArrayList<>();
+    public <T extends Multilang> List<CodeAndName> allReplacedHelper(String lang, List<T> all){
         return all.stream()
                 .map(it-> {
                     CodeAndName codeAndName = new CodeAndName();
@@ -185,5 +179,36 @@ public class ResposneServiceImpl implements com.wolper.service.ResposneService {
                     codeAndName.setName(interfacer(it, resolvLang(lang)));
                     return codeAndName;
                 }).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public Map<String, Map<String, List<String>>> replaceAndSortForTreeList(Map<String, Map<String, List<String>>> initMap, Multilang.SLANG slang) {
+        List<Indicator> allI = indicatorRepo.findAll();
+        List<Activity> allA = activityRepo.findAll();
+        List<Sector> allS = sectorRepo.findAll();
+
+        TreeMap<String, Map<String, List<String>>> sortedMap = new TreeMap<>();
+        initMap.keySet().stream().forEach(it->{
+            Optional<Indicator> indRenamed = allI.stream().filter(es -> es.getCode().equals(it)).findFirst();
+            String name=it;
+            if (indRenamed.isPresent()) name=interfacer(indRenamed.get(), slang);
+            TreeMap<String, List<String>> sortedInner = new TreeMap<>();
+            Map<String, List<String>> unsortedInner = initMap.get(it);
+            unsortedInner.keySet().stream().forEach(its-> {
+                Optional<Sector> secRenamed = allS.stream().filter(es -> es.getCode().equals(its)).findFirst();
+                String nameSecond = its;
+                if (indRenamed.isPresent()) nameSecond = interfacer(secRenamed.get(), slang);
+                TreeMap<String, List<String>> sortedInnerInner = new TreeMap<>();
+                List<String> sortedActivities = unsortedInner.get(its).stream().map(itr-> {
+                    var aRenamed = allA.stream().filter(es -> es.getCode().equals(itr)).findFirst();
+                    if (aRenamed.isPresent()) return interfacer(aRenamed.get(), slang);
+                    return itr;
+                }).sorted().collect(Collectors.toList());
+                sortedInner.put(nameSecond, sortedActivities);
+            });
+            sortedMap.put(name, sortedInner);
+        });
+        return sortedMap;
     }
 }

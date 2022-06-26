@@ -2,6 +2,7 @@ package com.wolper.service.impl;
 
 import com.wolper.dto.Grossbuch;
 import com.wolper.repositories.GrossbuchRepo;
+import com.wolper.service.Multilang;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import model.*;
@@ -28,7 +29,7 @@ public class GrossbuchServiceImpl implements com.wolper.service.GrossbuchService
         MapOfIndicators mapC = new MapOfIndicators();
         try {
             List<Grossbuch> allByCountry = grossbuch.findAllByCountryAndSectorAndActivity(countryCode, sector, activity);
-            Map<String, ArrayList<YearAndInd>> mapCI  = createMap(allByCountry, false);
+            Map<String, ArrayList<YearAndInd>> mapCI = createMap(allByCountry, false);
             List<MapOfIndicatorsInner> collect1 = mapCI.keySet().stream()
                     .map(it -> {
                         MapOfIndicatorsInner mapOfIndicatorsInner = new MapOfIndicatorsInner();
@@ -52,7 +53,7 @@ public class GrossbuchServiceImpl implements com.wolper.service.GrossbuchService
         MapOfCountries mapI = new MapOfCountries();
         try {
             List<Grossbuch> allByIndicator = grossbuch.findAllByIndicatorAndSectorAndActivity(indicator, sector, activity);
-            Map<String, ArrayList<YearAndInd>> mapII  = createMap(allByIndicator, true);
+            Map<String, ArrayList<YearAndInd>> mapII = createMap(allByIndicator, true);
             List<MapOfCountriesInner> collect1 = mapII.keySet().stream()
                     .map(it -> {
                         MapOfCountriesInner mapOfIndicatorsInner = new MapOfCountriesInner();
@@ -108,48 +109,6 @@ public class GrossbuchServiceImpl implements com.wolper.service.GrossbuchService
         return mapI;
     }
 
-    @Override
-    public List<MapOfActivities> getMappedSectorAndActivity() {
-        List<MapOfActivities> mol = new ArrayList<>();
-        List<Grossbuch> gb = grossbuch.findAllGroupedBySectorAndActivity();
-        Map<String, Map<String, List<String>>> collect = gb.stream()
-                .collect(Collectors.toMap(Grossbuch::getIndicator, it -> {
-                    Map<String, List<String>> mapI = new HashMap<>();
-                    ArrayList<String> strings = new ArrayList<>();
-                    strings.add(it.getActivity());
-                    mapI.put(it.getSector(), strings);
-                    return mapI;
-                }, (se, ze) -> {
-                    Map<String, List<String>> mapR = new HashMap<>();
-                    Stream.concat(ze.keySet().stream(), se.keySet().stream())
-                            .forEach(it-> {
-                                List<String> strings1 = se.get(it);
-                                List<String> strings2 = ze.get(it);
-                                List<String> lR = new ArrayList<>();
-                                if (Objects.nonNull(strings1)) lR.addAll(strings1);
-                                if (Objects.nonNull(strings2)) lR.addAll(strings2);
-                                mapR.put(it, lR);
-                            });
-                    return mapR;
-                }));
-
-        collect.keySet().stream()
-                .forEach(it-> {
-                    MapOfActivities mo = new MapOfActivities();
-                    mo.setSectors(new ArrayList<>());
-                    collect.get(it).keySet().stream()
-                                    .forEach(is-> {
-                                        MapOfActivitiesSectors ms = new MapOfActivitiesSectors();
-                                        ms.setSname(is);
-                                        ms.setActivities(collect.get(it).get(is));
-                                        mo.getSectors().add(ms);
-                                    });
-                    mo.setIndicator(it);
-                    mol.add(mo);
-                });
-        return mol;
-    }
-
     private Map<String, ArrayList<YearAndInd>> createMap(List<Grossbuch> all, boolean forCountry) {
         Function<Grossbuch, String> f = forCountry ? Grossbuch::getCountry : Grossbuch::getIndicator;
         return all.stream()
@@ -169,28 +128,68 @@ public class GrossbuchServiceImpl implements com.wolper.service.GrossbuchService
                         }));
     }
 
+    @Override
+    public Map<String, Map<String, List<String>>> getMappedSectorAndActivity() {
+        List<Grossbuch> gb = grossbuch.findAllGroupedBySectorAndActivity();
+        Map<String, Map<String, List<String>>> beforeResult = gb.stream()
+                .collect(Collectors.toMap(Grossbuch::getIndicator, it -> {
+                    Map<String, List<String>> mapI = new HashMap<>();
+                    ArrayList<String> strings = new ArrayList<>();
+                    strings.add(it.getActivity());
+                    mapI.put(it.getSector(), strings);
+                    return mapI;
+                }, (se, ze) -> {
+                    Map<String, List<String>> mapR = new HashMap<>();
+                    Stream.concat(ze.keySet().stream(), se.keySet().stream())
+                            .forEach(it -> {
+                                List<String> strings1 = se.get(it);
+                                List<String> strings2 = ze.get(it);
+                                List<String> lR = new ArrayList<>();
+                                if (Objects.nonNull(strings1)) lR.addAll(strings1);
+                                if (Objects.nonNull(strings2)) lR.addAll(strings2);
+                                mapR.put(it, lR);
+                            });
+                    return mapR;
+                }));
+        return beforeResult;
+    }
 
-    public List<Map<String, Object>> getMappedSectorAndActivityForMenuTree(List<MapOfActivities> map_init) {
-        List<Map<String, Object>> map_res = new ArrayList<>();
-        for (MapOfActivities mapIndActSect : map_init) {
-            Map<String, Object> innerMap = new HashMap<>();
-            map_res.add(innerMap);
-            innerMap.put("text", mapIndActSect.getIndicator());
-            List<Map<String, Object>> innerMapList = new ArrayList<>();
-            innerMap.put("items", innerMapList);
-            for (MapOfActivitiesSectors mapActSect : mapIndActSect.getSectors()) {
-                Map<String, Object> innerInnerMap = new HashMap<>();
-                innerMapList.add(innerInnerMap);
-                innerInnerMap.put("text", mapActSect.getSname());
-                List<Map<String, Object>> innerInnerInnerMapList = new ArrayList<>();
-                innerInnerMap.put("items", innerInnerInnerMapList);
-                for (String activity : mapActSect.getActivities()) {
-                    Map<String, Object> innerInnerInnerMap = new HashMap<>();
-                    innerInnerInnerMapList.add(innerInnerInnerMap);
-                    innerInnerInnerMap.put("text", activity);
+
+    @Override
+    public ForTreeList getMappedSectorAndActivityForMenuTree(Map<String, Map<String, List<String>>> beforeResult) {
+        ForTreeList result = new ForTreeList();
+        for (final String indicator : beforeResult.keySet()) {
+            if (beforeResult.get(indicator).isEmpty()) {
+                ForTreeListEmptyItem firstMap = new ForTreeListEmptyItem();
+                result.add(firstMap);
+                firstMap.setText(indicator);
+            } else {
+                ForTreeListItem firstMap = new ForTreeListItem();
+                result.add(firstMap);
+                firstMap.setText(indicator);
+                ForTreeList firstList = new ForTreeList();
+                firstMap.setItems(firstList);
+                for (final String sector : beforeResult.get(indicator).keySet()) {
+                    if (beforeResult.get(indicator).get(sector).isEmpty()) {
+                        ForTreeListEmptyItem secondMap = new ForTreeListEmptyItem();
+                        firstList.add(secondMap);
+                        secondMap.setText(sector);
+                    } else {
+                        ForTreeListItem secondMap = new ForTreeListItem();
+                        firstList.add(secondMap);
+                        secondMap.setText(sector);
+                        ForTreeList secondList = new ForTreeList();
+                        secondMap.setItems(secondList);
+                        for (final String activity : beforeResult.get(indicator).get(sector)) {
+                            ForTreeListEmptyItem finalMap = new ForTreeListEmptyItem();
+                            secondList.add(finalMap);
+                            finalMap.setText(activity);
+                            finalMap.setId(String.format("%s:%s:%s", indicator, sector, activity));
+                        }
+                    }
                 }
             }
         }
-        return map_res;
+        return result;
     }
 }

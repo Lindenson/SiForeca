@@ -1,3 +1,5 @@
+mvn clean package -DskipTests=true
+cp ./target/SiForeca-1.0.jar ./SiForeca-1.0.jar
 [[ -d www ]] || mkdir www
 cp -r -f ./src/main/resources/public/css ./www/css
 cp -r -f ./src/main/resources/public/fonts ./www/fonts

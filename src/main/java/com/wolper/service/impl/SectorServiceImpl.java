@@ -27,7 +27,7 @@ public class SectorServiceImpl {
         List<CodeAndName> resL = new ArrayList<>();
         try {
             List<Sector> all = sectorRepo.findAll();
-            resL=resposneService.allReplacedhelper(lang, all);
+            resL=resposneService.allReplacedHelper(lang, all);
         }
         catch (Exception ex) {
             log.error(ex.getMessage());

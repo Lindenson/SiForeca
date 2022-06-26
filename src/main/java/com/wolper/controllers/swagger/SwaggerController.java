@@ -10,12 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
+import java.util.Map;
 
 
 @Controller
 @RequestMapping("/v1")
 @AllArgsConstructor
-public class SwaggerController implements CountriesApi, IndicatorsApi, YearsApi, IndicatorApi, CountryApi, YearApi, ActivitiesApi, SectorApi {
+public class SwaggerController implements CountriesApi, IndicatorsApi, IndicatorApi, YearsApi, CountryApi, YearApi, ActivitiesApi, SectorApi {
 
     private final CountryService countryService;
     private final IndicatorService indicatorService;
@@ -63,10 +64,11 @@ public class SwaggerController implements CountriesApi, IndicatorsApi, YearsApi,
         return new ResponseEntity<>(dataForOneYear, HttpStatus.OK);
     }
 
-
     @Override
-    public ResponseEntity<List<MapOfActivities>> getActivity() {
-        return new ResponseEntity<>(grossbuchService.getMappedSectorAndActivity(), HttpStatus.OK);
+    public ResponseEntity<ForTreeList> getActivity(String contentLanguage) {
+        Map<String, Map<String, List<String>>> first = grossbuchService.getMappedSectorAndActivity();
+        Map<String, Map<String, List<String>>> second = resposneService.replaceAndSortForTreeList(first, resposneService.resolvLang(contentLanguage));
+        return new ResponseEntity<>(grossbuchService.getMappedSectorAndActivityForMenuTree(second), HttpStatus.OK);
     }
 
     @Override

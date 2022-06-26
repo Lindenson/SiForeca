@@ -21,6 +21,8 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -123,46 +125,6 @@ public class GrossBuchServiceTest {
 
 
     @Test
-    void getMappedSectorAndActivityTest() {
-        //SUPPOSE: repo returns unique indicator+sector+activity combination
-        Set <String> checklist = new HashSet<>();
-        var uniqueList = gbList.stream().filter(it->{
-            if (!checklist.contains(it.getIndicator()+it.getSector()+it.getActivity())) {
-                checklist.add(it.getIndicator()+it.getSector()+it.getActivity());
-                return true;
-            }
-            return false;
-        }).collect(Collectors.toList());
-
-        Mockito.when(grossbuchRepo.findAllGroupedBySectorAndActivity()).thenReturn(uniqueList);
-        //WHEN: we query the GrossbuchService
-        var result = grossbuchService.getMappedSectorAndActivity();
-        var allIndicators = result.stream().map(it->it.getIndicator()).collect(Collectors.toList());
-        var allIndicatorsUniqueOrigin = uniqueList.stream().map(Grossbuch::getIndicator).collect(Collectors.toSet());
-        var allSectors = result.stream().flatMap(it -> it.getSectors().stream()).map(MapOfActivitiesSectors::getSname).collect(Collectors.toList());
-        checklist.clear();
-        var allSectorsUniqueOrigin = uniqueList.stream().filter(it->{
-            if (!checklist.contains(it.getIndicator()+it.getSector())) {
-                checklist.add(it.getIndicator()+it.getSector());
-                return true;
-            }
-            return false;
-        }).map(Grossbuch::getSector).collect(Collectors.toList());
-        var allActivities = result.stream().flatMap(it->it.getSectors().stream()).flatMap(it->it.getActivities().stream()).collect(Collectors.toList());
-        var allActivitiesOrigin = uniqueList.stream().map(Grossbuch::getActivity).collect(Collectors.toList());
-        //THEN: we get a list of records to organize a menu tree list
-        assertEquals(allIndicatorsUniqueOrigin.size(), allIndicators.size());
-        assertTrue(allIndicatorsUniqueOrigin.containsAll(allIndicators));
-        assertEquals(allSectorsUniqueOrigin.size(), allSectors.size());
-        assertTrue(allSectorsUniqueOrigin.containsAll(allSectors));
-        assertEquals(allActivities.size(), allActivitiesOrigin.size());
-        assertTrue(allActivities.containsAll(allActivitiesOrigin));
-
-    }
-
-
-
-    @Test
     void getNewMappedSectorAndActivityTest() {
         //SUPPOSE: repo returns unique indicator+sector+activity combination
         Set <String> checklist = new HashSet<>();
@@ -176,17 +138,63 @@ public class GrossBuchServiceTest {
 
         Mockito.when(grossbuchRepo.findAllGroupedBySectorAndActivity()).thenReturn(uniqueList);
         //WHEN: we query the GrossbuchService
-        var result = grossbuchService.getMappedSectorAndActivity();
-        List<Map<String, Object>> mappedSectorAndActivityNew = grossbuchService.getMappedSectorAndActivityForMenuTree(result);
-//        try {
-//            ObjectMapper ow = new ObjectMapper();
-//            String json = ow.writeValueAsString(mappedSectorAndActivityNew);
-//            System.out.println(json);
-//        }
-//        catch (Exception e) {}
-        assertEquals(2, 2);
+        ForTreeList result = grossbuchService.getMappedSectorAndActivityForMenuTree(grossbuchService.getMappedSectorAndActivity());
+        var allIndicators = result.stream().map(it-> {
+            switch (it) {
+                case ForTreeListItem itt -> {return itt.getText();}
+                case ForTreeListEmptyItem itt -> {return itt.getText();}
+                default -> throw new IllegalStateException("Unexpected value: " + it);
+            }
+        }).collect(Collectors.toList());
 
+        var allIndicatorsUniqueOrigin = uniqueList.stream().map(Grossbuch::getIndicator).collect(Collectors.toSet());
+        var allSectors = result.stream().flatMap(it -> {
+            switch (it) {
+                case ForTreeListItem itt -> {return itt.getItems().stream().map(irr-> {
+                    switch (irr) {
+                        case ForTreeListItem izz -> {return izz.getText();}
+                        case ForTreeListEmptyItem izz -> {return izz.getText();}
+                        default -> throw new IllegalStateException("Unexpected value: " + it);
+                    }});}
+                case ForTreeListEmptyItem itt -> {return Stream.empty();}
+                default -> throw new IllegalStateException("Unexpected value: " + it);
+            }
+        }).collect(Collectors.toList());
+        checklist.clear();
+        var allSectorsUniqueOrigin = uniqueList.stream().filter(it->{
+            if (!checklist.contains(it.getIndicator()+it.getSector())) {
+                checklist.add(it.getIndicator()+it.getSector());
+                return true;
+            }
+            return false;
+        }).map(Grossbuch::getSector).collect(Collectors.toList());
+        var allActivities = result.stream().flatMap(it -> {
+            switch (it) {
+                case ForTreeListItem itt -> {return itt.getItems().stream();}
+                case ForTreeListEmptyItem itt -> {return Stream.empty();}
+                default -> throw new IllegalStateException("Unexpected value: " + it);
+            }
+        }).flatMap(it -> {
+            switch (it) {
+                case ForTreeListItem itt -> {return itt.getItems().stream().map(ioo->{
+                    switch (ioo) {
+                        case ForTreeListItem iqq -> {return iqq.getText();}
+                        case ForTreeListEmptyItem iqq -> {return iqq.getText();}
+                        default -> throw new IllegalStateException("Unexpected value: " + it);
+                    }});}
+                case ForTreeListEmptyItem itt -> {return Stream.empty();}
+                default -> throw new IllegalStateException("Unexpected value: " + it);
+            }
+        }).collect(Collectors.toList());
+        var allActivitiesOrigin = uniqueList.stream().map(Grossbuch::getActivity).collect(Collectors.toList());
+        assertEquals(allIndicatorsUniqueOrigin.size(), allIndicators.size());
+        assertTrue(allIndicatorsUniqueOrigin.containsAll(allIndicators));
+        assertEquals(allSectorsUniqueOrigin.size(), allSectors.size());
+        assertTrue(allSectorsUniqueOrigin.containsAll(allSectors));
+        assertEquals(allActivities.size(), allActivitiesOrigin.size());
+        assertTrue(allActivities.containsAll(allActivitiesOrigin));
     }
+
 
     private static void createGrossbuchesList() {
         String[] listUNIQ = {"A","B","C","D","E", "F"};
@@ -195,7 +203,7 @@ public class GrossBuchServiceTest {
                 listUNIQ[ThreadLocalRandom.current().nextInt(0, listUNIQ.length)] +
                 listUNIQ[ThreadLocalRandom.current().nextInt(0, listUNIQ.length)]).collect(Collectors.toList());
 
-        gbList = IntStream.range(1, 3600).mapToObj(it ->
+        gbList = IntStream.range(1, 360).mapToObj(it ->
                 new Grossbuch(Long.valueOf(it), LocalDate.of(TESTYEAR, it % 12+1, it % 28+1), new BigDecimal(ThreadLocalRandom.current().nextDouble()),
                         uniqList.get(ThreadLocalRandom.current().nextInt(0, uniqList.size())),
                         uniqList.get(ThreadLocalRandom.current().nextInt(0, uniqList.size())),
