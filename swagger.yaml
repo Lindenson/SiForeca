@@ -25,7 +25,7 @@ paths:
     get:
       tags:
         - "indicator"
-      summary: "Get a specified indicator for a set of countryies"
+      summary: "Get a specified indicator for a set of countries"
       description: "One indicator for a group of countries"
       operationId: "getInd"
       consumes:

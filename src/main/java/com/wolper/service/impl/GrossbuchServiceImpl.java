@@ -169,6 +169,28 @@ public class GrossbuchServiceImpl implements com.wolper.service.GrossbuchService
                         }));
     }
 
-}
 
-//const products = [{"text":"IME","items":[{"text":"SMS","items":[{"text":"ALM"}]}]},{"text":"IAMWE","items":[{"text":"SPS","items":[{"text":"AMF"}]}]}];
+    public List<Map<String, Object>> getMappedSectorAndActivityForMenuTree(List<MapOfActivities> map_init) {
+        List<Map<String, Object>> map_res = new ArrayList<>();
+        for (MapOfActivities mapIndActSect : map_init) {
+            Map<String, Object> innerMap = new HashMap<>();
+            map_res.add(innerMap);
+            innerMap.put("text", mapIndActSect.getIndicator());
+            List<Map<String, Object>> innerMapList = new ArrayList<>();
+            innerMap.put("items", innerMapList);
+            for (MapOfActivitiesSectors mapActSect : mapIndActSect.getSectors()) {
+                Map<String, Object> innerInnerMap = new HashMap<>();
+                innerMapList.add(innerInnerMap);
+                innerInnerMap.put("text", mapActSect.getSname());
+                List<Map<String, Object>> innerInnerInnerMapList = new ArrayList<>();
+                innerInnerMap.put("items", innerInnerInnerMapList);
+                for (String activity : mapActSect.getActivities()) {
+                    Map<String, Object> innerInnerInnerMap = new HashMap<>();
+                    innerInnerInnerMapList.add(innerInnerInnerMap);
+                    innerInnerInnerMap.put("text", activity);
+                }
+            }
+        }
+        return map_res;
+    }
+}
