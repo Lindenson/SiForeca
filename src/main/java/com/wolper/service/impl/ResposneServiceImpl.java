@@ -2,22 +2,25 @@ package com.wolper.service.impl;
 
 import com.wolper.dto.*;
 import com.wolper.repositories.*;
+import com.wolper.service.GrossbuchService;
 import com.wolper.service.Multilang;
 import com.wolper.service.ResposneService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import model.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import javax.validation.constraints.Max;
 import java.util.*;
 import java.util.stream.Collectors;
 import static com.wolper.service.Multilang.RU;
 import static com.wolper.service.Multilang.UA;
 
 
+/**
+ * ResposneService is responsible for transforming other services response into the style
+ * acceptable for frontend application. For instance, it translates the codes to human-readable words,
+ * supports multilingual responses. etc.
+ */
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -28,6 +31,7 @@ public class ResposneServiceImpl implements ResposneService {
     final UnitRepo unitRepo;
     final ActivityRepo activityRepo;
     final SectorRepo sectorRepo;
+
 
     @Override
     public void replaceIndName(MapOfIndicators mapI, Multilang.SLANG slang){
@@ -183,32 +187,49 @@ public class ResposneServiceImpl implements ResposneService {
 
 
     @Override
-    public Map<String, Map<String, List<String>>> replaceAndSortForTreeList(Map<String, Map<String, List<String>>> initMap, Multilang.SLANG slang) {
-        List<Indicator> allI = indicatorRepo.findAll();
-        List<Activity> allA = activityRepo.findAll();
-        List<Sector> allS = sectorRepo.findAll();
+    public Map<String, Map<String, List<PairStrings>>> replaceAndSortForTreeList(
+            Map<String, Map<String, List<String>>> initMap,
+            Multilang.SLANG slang,
+            GrossbuchService.MapedDependings md
+    ) {
 
-        TreeMap<String, Map<String, List<String>>> sortedMap = new TreeMap<>();
+        List<Multilang> allI = repoFinderHelper(md);
+        List<Multilang> allA = (List<Multilang>)((List) activityRepo.findAll());
+        List<Multilang> allS = (List<Multilang>)((List) sectorRepo.findAll());
+
+        TreeMap<String, Map<String, List<PairStrings>>> sortedMap = new TreeMap<>();
         initMap.keySet().stream().forEach(it->{
-            Optional<Indicator> indRenamed = allI.stream().filter(es -> es.getCode().equals(it)).findFirst();
-            String name=it;
-            if (indRenamed.isPresent()) name=interfacer(indRenamed.get(), slang);
-            TreeMap<String, List<String>> sortedInner = new TreeMap<>();
+            String name=nameReplacerHelper(allI, it, slang);
+            TreeMap<String, List<PairStrings>> sortedInner = new TreeMap<>();
             Map<String, List<String>> unsortedInner = initMap.get(it);
             unsortedInner.keySet().stream().forEach(its-> {
-                Optional<Sector> secRenamed = allS.stream().filter(es -> es.getCode().equals(its)).findFirst();
-                String nameSecond = its;
-                if (indRenamed.isPresent()) nameSecond = interfacer(secRenamed.get(), slang);
+                String nameSecond = nameReplacerHelper(allS, its, slang);
                 TreeMap<String, List<String>> sortedInnerInner = new TreeMap<>();
-                List<String> sortedActivities = unsortedInner.get(its).stream().map(itr-> {
+                List<PairStrings> sortedActivities = unsortedInner.get(its).stream().map(itr-> {
                     var aRenamed = allA.stream().filter(es -> es.getCode().equals(itr)).findFirst();
-                    if (aRenamed.isPresent()) return interfacer(aRenamed.get(), slang);
-                    return itr;
-                }).sorted().collect(Collectors.toList());
+                    String codedString = String.format("%s:%s:%s", it, its, itr);
+                    if (aRenamed.isPresent()) return new PairStrings(codedString, interfacer(aRenamed.get(), slang));
+                    return new PairStrings(codedString, itr);
+                }).sorted(Comparator.comparing(PairStrings::text, String::compareTo)).collect(Collectors.toList());
                 sortedInner.put(nameSecond, sortedActivities);
             });
             sortedMap.put(name, sortedInner);
         });
         return sortedMap;
+    }
+
+    private List<Multilang> repoFinderHelper(GrossbuchService.MapedDependings md){
+        switch (md) {
+            case INDICATOR -> {return (List<Multilang>)((List) indicatorRepo.findAll());}
+            case COUNTRY -> {return countryRepo.findAll().stream().map(Multilang.class::cast).collect(Collectors.toList());}
+            case YEAR -> {return new ArrayList<>();}
+            default -> throw new IllegalStateException("wrong enum choice in replaceAndSortForTreeListHelper");
+        }
+    }
+
+    private String nameReplacerHelper(List<Multilang> lm, String code, Multilang.SLANG slang){
+        Optional<Multilang> indRenamed = lm.stream().filter(es -> es.getCode().equals(code)).findFirst();
+        if (indRenamed.isPresent()) return interfacer(indRenamed.get(), slang);
+        return code;
     }
 }

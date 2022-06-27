@@ -1,11 +1,17 @@
 package com.wolper.service;
 
+import com.wolper.dto.PairStrings;
 import model.*;
 
 import java.util.List;
 import java.util.Map;
 
 public interface GrossbuchService {
+
+    enum MapedDependings {
+        INDICATOR, COUNTRY, YEAR
+    }
+
     List<Integer> getAllYearsList();
 
     MapOfIndicators getDataForOneCountry(String countryCode, String sector, String activity);
@@ -14,7 +20,7 @@ public interface GrossbuchService {
 
     MapOfTime getDataForOneYear(Integer year, String sector, String activity);
 
-    Map<String, Map<String, List<String>>> getMappedSectorAndActivity();
+    Map<String, Map<String, List<String>>> getMappedSectorAndActivity(MapedDependings depending);
 
-    ForTreeList getMappedSectorAndActivityForMenuTree(Map<String, Map<String, List<String>>> beforeResult);
+    ForTreeList getMappedSectorAndActivityForMenuTree(Map<String, Map<String, List<PairStrings>>> beforeResult);
 }

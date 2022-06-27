@@ -92,6 +92,35 @@ paths:
           description: "Server error"
         403:
           description: "Unauthorised"
+  /indicators/sector:
+    get:
+      tags:
+        - "indicator"
+      summary: "Get a map of sector and its activities"
+      description: "Map activities to sector"
+      operationId: "getIndicatorsSector"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ForTreeList'
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+
   /country/{cname}:
     get:
       tags:
@@ -163,6 +192,35 @@ paths:
           description: "Server error"
         403:
           description: "Unauthorised"
+  /countries/sector:
+    get:
+      tags:
+        - "country"
+      summary: "Get a map of sector and its activities"
+      description: "Map activities to sector"
+      operationId: "getCountriesSector"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: header
+          name: "Content-Language"
+          description: "Interface"
+          required: false
+          type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ForTreeList'
+        405:
+          description: "Invalid input"
+        500:
+          description: "Server error"
+        403:
+          description: "Unauthorised"
+
   /year/{date}:
     get:
       tags:
@@ -234,14 +292,13 @@ paths:
           description: "Server error"
         403:
           description: "Unauthorised"
-
-  /indicators/sector:
+  /years/sector:
     get:
       tags:
-        - "indicator"
+        - "year"
       summary: "Get a map of sector and its activities"
       description: "Map activities to sector"
-      operationId: "getActivity"
+      operationId: "getYearSector"
       consumes:
         - "application/json"
       produces:

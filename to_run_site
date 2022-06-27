@@ -1,6 +1,7 @@
 mvn clean package -DskipTests=true
 cp ./target/SiForeca-1.0.jar ./SiForeca-1.0.jar
-[[ -d www ]] || mkdir www
+[[ -d www ]] && rm -r -f www 
+mkdir www
 cp -r -f ./src/main/resources/public/css ./www/css
 cp -r -f ./src/main/resources/public/fonts ./www/fonts
 cp -r -f ./src/main/resources/public/js ./www/js
@@ -8,4 +9,4 @@ cp -r -f ./src/main/resources/public/index.html ./www/
 cp -r -f ./src/main/resources/public/favicon.ico ./www/
 cp -f ./target/SiForeca-1.0.jar ./SiForeca-1.0.jar
 docker-compose down
-docker-compose up -d 
+docker-compose up -d

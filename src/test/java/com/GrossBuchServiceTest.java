@@ -1,24 +1,29 @@
 package com;
 
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.wolper.dto.Grossbuch;
+import com.wolper.dto.PairStrings;
 import com.wolper.repositories.GrossbuchRepo;
+import com.wolper.service.GrossbuchService;
+import com.wolper.service.Multilang;
 import com.wolper.service.impl.GrossbuchServiceImpl;
-import io.swagger.v3.core.util.Json;
 import lombok.extern.log4j.Log4j2;
 import model.*;
+import org.junit.Ignore;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -124,21 +129,34 @@ public class GrossBuchServiceTest {
     }
 
 
-    @Test
-    void getNewMappedSectorAndActivityTest() {
+    @ParameterizedTest
+    @ValueSource(strings = {"INDICATOR", "COUNTRY", "YEAR"})
+    void getNewMappedSectorAndActivityTest(String parameter) {
         //SUPPOSE: repo returns unique indicator+sector+activity combination
+        GrossbuchService.MapedDependings toTest = GrossbuchService.MapedDependings.valueOf(parameter);
         Set <String> checklist = new HashSet<>();
-        var uniqueList = gbList.stream().filter(it->{
-            if (!checklist.contains(it.getIndicator()+it.getSector()+it.getActivity())) {
-                checklist.add(it.getIndicator()+it.getSector()+it.getActivity());
-                return true;
-            }
-            return false;
-        }).collect(Collectors.toList());
+        var uniqueList = gbList.stream().filter(prepareUniqueListFilter(toTest, checklist, true)).collect(Collectors.toList());
+        Set<String> allIndicatorsUniqueOrigin = null;
+        switch (toTest) {
+            case INDICATOR: allIndicatorsUniqueOrigin=uniqueList.stream().map(Grossbuch::getIndicator).collect(Collectors.toSet()); break;
+            case COUNTRY: allIndicatorsUniqueOrigin=uniqueList.stream().map(Grossbuch::getCountry).collect(Collectors.toSet()); break;
+            case YEAR: allIndicatorsUniqueOrigin=uniqueList.stream().map(it->String.valueOf(it.getDate().getYear())).collect(Collectors.toSet()); break;
+        }
+        checklist.clear();
+        var allSectorsUniqueOrigin = uniqueList.stream().filter(prepareUniqueListFilter(toTest, checklist, false))
+                .map(Grossbuch::getSector).collect(Collectors.toList());
+        var allActivitiesOrigin = uniqueList.stream().map(Grossbuch::getActivity).collect(Collectors.toList());
 
-        Mockito.when(grossbuchRepo.findAllGroupedBySectorAndActivity()).thenReturn(uniqueList);
+        switch (toTest) {
+            case INDICATOR: Mockito.when(grossbuchRepo.findAllIndicatorsGroupedBySectorAndActivity()).thenReturn(uniqueList); break;
+            case COUNTRY: Mockito.when(grossbuchRepo.findAllCountriesGroupedBySectorAndActivity()).thenReturn(uniqueList); break;
+            case YEAR: Mockito.when(grossbuchRepo.findAllYearsGroupedBySectorAndActivity()).thenReturn(uniqueList); break;
+        }
+
         //WHEN: we query the GrossbuchService
-        ForTreeList result = grossbuchService.getMappedSectorAndActivityForMenuTree(grossbuchService.getMappedSectorAndActivity());
+        ForTreeList result = grossbuchService.getMappedSectorAndActivityForMenuTree(
+                pairHelper(grossbuchService.getMappedSectorAndActivity(toTest)));
+
         var allIndicators = result.stream().map(it-> {
             switch (it) {
                 case ForTreeListItem itt -> {return itt.getText();}
@@ -147,7 +165,6 @@ public class GrossBuchServiceTest {
             }
         }).collect(Collectors.toList());
 
-        var allIndicatorsUniqueOrigin = uniqueList.stream().map(Grossbuch::getIndicator).collect(Collectors.toSet());
         var allSectors = result.stream().flatMap(it -> {
             switch (it) {
                 case ForTreeListItem itt -> {return itt.getItems().stream().map(irr-> {
@@ -160,14 +177,7 @@ public class GrossBuchServiceTest {
                 default -> throw new IllegalStateException("Unexpected value: " + it);
             }
         }).collect(Collectors.toList());
-        checklist.clear();
-        var allSectorsUniqueOrigin = uniqueList.stream().filter(it->{
-            if (!checklist.contains(it.getIndicator()+it.getSector())) {
-                checklist.add(it.getIndicator()+it.getSector());
-                return true;
-            }
-            return false;
-        }).map(Grossbuch::getSector).collect(Collectors.toList());
+
         var allActivities = result.stream().flatMap(it -> {
             switch (it) {
                 case ForTreeListItem itt -> {return itt.getItems().stream();}
@@ -186,7 +196,8 @@ public class GrossBuchServiceTest {
                 default -> throw new IllegalStateException("Unexpected value: " + it);
             }
         }).collect(Collectors.toList());
-        var allActivitiesOrigin = uniqueList.stream().map(Grossbuch::getActivity).collect(Collectors.toList());
+
+        //THEN: OUR RESPONSE COINCIDES WITH EXPECTATIONS IN SIZE AND CONTENT
         assertEquals(allIndicatorsUniqueOrigin.size(), allIndicators.size());
         assertTrue(allIndicatorsUniqueOrigin.containsAll(allIndicators));
         assertEquals(allSectorsUniqueOrigin.size(), allSectors.size());
@@ -217,5 +228,50 @@ public class GrossBuchServiceTest {
                         uniqList.get(ThreadLocalRandom.current().nextInt(0, uniqList.size())),
                         uniqList.get(ThreadLocalRandom.current().nextInt(0, uniqList.size())))
         ).collect(Collectors.toList());
+    }
+
+    private Map<String, Map<String, List<PairStrings>>> pairHelper(Map<String, Map<String, List<String>>> init){
+        return init.keySet().stream().collect(Collectors.toMap(Function.identity(),
+                    it->{
+                        var map = init.get(it);
+                        return map.keySet().stream().collect(Collectors.toMap(Function.identity(),
+                            is-> {
+                                return init.get(it).get(is).stream().map(ir->new PairStrings(ir, ir)).collect(Collectors.toList());
+                            }));
+                    }));
+    }
+
+    private Predicate<Grossbuch> prepareUniqueListFilter(GrossbuchService.MapedDependings md, Set <String> checklist, boolean withActivity) {
+        switch (md) {
+            case INDICATOR -> {
+                return it -> {
+                    if (!checklist.contains(it.getIndicator() + it.getSector() + (withActivity?it.getActivity():""))) {
+                        checklist.add(it.getIndicator() + it.getSector() + (withActivity?it.getActivity():""));
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            case COUNTRY -> {
+                return it -> {
+                    if (!checklist.contains(it.getCountry() + it.getSector() + (withActivity?it.getActivity():""))) {
+                        checklist.add(it.getCountry() + it.getSector() + (withActivity?it.getActivity():""));
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            case YEAR -> {
+                return it -> {
+                    String year = String.valueOf(it.getDate().getYear());
+                    if (!checklist.contains(year + it.getSector() + (withActivity?it.getActivity():""))) {
+                        checklist.add(year + it.getSector() + (withActivity?it.getActivity():""));
+                        return true;
+                    }
+                    return false;
+                };
+            }
+            default -> throw new IllegalStateException("wrong enum for prepareUniqueListFilter");}
+
     }
 }

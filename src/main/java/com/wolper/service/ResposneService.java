@@ -1,5 +1,6 @@
 package com.wolper.service;
 
+import com.wolper.dto.PairStrings;
 import model.*;
 
 import java.util.List;
@@ -22,5 +23,7 @@ public interface ResposneService {
 
     <T extends Multilang> List<CodeAndName> allReplacedHelper(String lang, List<T> all);
 
-    Map<String, Map<String, List<String>>> replaceAndSortForTreeList(Map<String, Map<String, List<String>>> initMap, Multilang.SLANG slang);
+    Map<String, Map<String, List<PairStrings>>> replaceAndSortForTreeList(Map<String, Map<String, List<String>>> initMap,
+                                                                          Multilang.SLANG slang,
+                                                                          GrossbuchService.MapedDependings md);
 }

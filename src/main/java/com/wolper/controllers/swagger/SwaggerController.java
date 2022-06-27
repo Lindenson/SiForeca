@@ -1,6 +1,7 @@
 package com.wolper.controllers.swagger;
 
 import api.*;
+import com.wolper.dto.PairStrings;
 import com.wolper.service.*;
 import com.wolper.service.impl.*;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,8 @@ public class SwaggerController implements CountriesApi, IndicatorsApi, Indicator
     private final ActivityService activityService;
     private final SectorServiceImpl sectorService;
     private final ResposneService resposneService;
+
+
 
 
     @Override
@@ -65,9 +68,10 @@ public class SwaggerController implements CountriesApi, IndicatorsApi, Indicator
     }
 
     @Override
-    public ResponseEntity<ForTreeList> getActivity(String contentLanguage) {
-        Map<String, Map<String, List<String>>> first = grossbuchService.getMappedSectorAndActivity();
-        Map<String, Map<String, List<String>>> second = resposneService.replaceAndSortForTreeList(first, resposneService.resolvLang(contentLanguage));
+    public ResponseEntity<ForTreeList> getIndicatorsSector(String contentLanguage) {
+        Map<String, Map<String, List<String>>> first = grossbuchService.getMappedSectorAndActivity(GrossbuchService.MapedDependings.INDICATOR);
+        Map<String, Map<String, List<PairStrings>>> second = resposneService
+                .replaceAndSortForTreeList(first, resposneService.resolvLang(contentLanguage), GrossbuchService.MapedDependings.INDICATOR);
         return new ResponseEntity<>(grossbuchService.getMappedSectorAndActivityForMenuTree(second), HttpStatus.OK);
     }
 
@@ -81,6 +85,22 @@ public class SwaggerController implements CountriesApi, IndicatorsApi, Indicator
     public ResponseEntity<List<CodeAndName>> getSectors(String contentLanguage) {
         List<CodeAndName> sectorNames = sectorService.findAllReplaced(contentLanguage);
         return new ResponseEntity<>(sectorNames, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<ForTreeList> getCountriesSector(String contentLanguage) {
+        Map<String, Map<String, List<String>>> first = grossbuchService.getMappedSectorAndActivity(GrossbuchService.MapedDependings.COUNTRY);
+        Map<String, Map<String, List<PairStrings>>> second = resposneService
+                .replaceAndSortForTreeList(first, resposneService.resolvLang(contentLanguage), GrossbuchService.MapedDependings.COUNTRY);
+        return new ResponseEntity<>(grossbuchService.getMappedSectorAndActivityForMenuTree(second), HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<ForTreeList> getYearSector(String contentLanguage) {
+        Map<String, Map<String, List<String>>> first = grossbuchService.getMappedSectorAndActivity(GrossbuchService.MapedDependings.YEAR);
+        Map<String, Map<String, List<PairStrings>>> second = resposneService
+                .replaceAndSortForTreeList(first, resposneService.resolvLang(contentLanguage), GrossbuchService.MapedDependings.YEAR);
+        return new ResponseEntity<>(grossbuchService.getMappedSectorAndActivityForMenuTree(second), HttpStatus.OK);
     }
 }
 

@@ -21,5 +21,11 @@ public interface GrossbuchRepo extends CrudRepository<Grossbuch, Long> {
     List<Grossbuch> findAllByDateYear(@Param("year") Integer year, @Param("sector") String sector, @Param("activity") String activity);
 
     @Query("SELECT DISTINCT ON (indicator, sector, activity) * FROM grossbuch;")
-    List<Grossbuch> findAllGroupedBySectorAndActivity();
+    List<Grossbuch> findAllIndicatorsGroupedBySectorAndActivity();
+
+    @Query("SELECT DISTINCT ON (country, sector, activity) * FROM grossbuch;")
+    List<Grossbuch> findAllCountriesGroupedBySectorAndActivity();
+
+    @Query("SELECT DISTINCT ON (date_part('year',date), sector, activity) * FROM grossbuch;")
+    List<Grossbuch> findAllYearsGroupedBySectorAndActivity();
 }

@@ -1,8 +1,8 @@
 package com.wolper.service.impl;
 
 import com.wolper.dto.Grossbuch;
+import com.wolper.dto.PairStrings;
 import com.wolper.repositories.GrossbuchRepo;
-import com.wolper.service.Multilang;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import model.*;
@@ -129,10 +129,10 @@ public class GrossbuchServiceImpl implements com.wolper.service.GrossbuchService
     }
 
     @Override
-    public Map<String, Map<String, List<String>>> getMappedSectorAndActivity() {
-        List<Grossbuch> gb = grossbuch.findAllGroupedBySectorAndActivity();
+    public Map<String, Map<String, List<String>>> getMappedSectorAndActivity(MapedDependings depending) {
+        List<Grossbuch> gb = getMappedSectorHelper(depending);
         Map<String, Map<String, List<String>>> beforeResult = gb.stream()
-                .collect(Collectors.toMap(Grossbuch::getIndicator, it -> {
+                .collect(Collectors.toMap(mapSelector(depending), it -> {
                     Map<String, List<String>> mapI = new HashMap<>();
                     ArrayList<String> strings = new ArrayList<>();
                     strings.add(it.getActivity());
@@ -155,8 +155,17 @@ public class GrossbuchServiceImpl implements com.wolper.service.GrossbuchService
     }
 
 
+    private Function<Grossbuch, String> mapSelector(MapedDependings md){
+        switch (md) {
+            case INDICATOR -> {return Grossbuch::getIndicator;}
+            case COUNTRY -> {return Grossbuch::getCountry;}
+            case YEAR -> {return it -> String.valueOf(it.getDate().getYear());}
+            default -> throw new IllegalStateException("wrong enum");
+        }
+    }
+
     @Override
-    public ForTreeList getMappedSectorAndActivityForMenuTree(Map<String, Map<String, List<String>>> beforeResult) {
+    public ForTreeList getMappedSectorAndActivityForMenuTree(Map<String, Map<String, List<PairStrings>>> beforeResult) {
         ForTreeList result = new ForTreeList();
         for (final String indicator : beforeResult.keySet()) {
             if (beforeResult.get(indicator).isEmpty()) {
@@ -180,16 +189,25 @@ public class GrossbuchServiceImpl implements com.wolper.service.GrossbuchService
                         secondMap.setText(sector);
                         ForTreeList secondList = new ForTreeList();
                         secondMap.setItems(secondList);
-                        for (final String activity : beforeResult.get(indicator).get(sector)) {
+                        for (final PairStrings activity : beforeResult.get(indicator).get(sector)) {
                             ForTreeListEmptyItem finalMap = new ForTreeListEmptyItem();
                             secondList.add(finalMap);
-                            finalMap.setText(activity);
-                            finalMap.setId(String.format("%s:%s:%s", indicator, sector, activity));
+                            finalMap.setText(activity.text());
+                            finalMap.setId(activity.code());
                         }
                     }
                 }
             }
         }
         return result;
+    }
+
+    private List<Grossbuch> getMappedSectorHelper(MapedDependings depending){
+        switch (depending) {
+            case INDICATOR -> {return grossbuch.findAllIndicatorsGroupedBySectorAndActivity();}
+            case COUNTRY -> {return grossbuch.findAllCountriesGroupedBySectorAndActivity();}
+            case YEAR -> {return grossbuch.findAllYearsGroupedBySectorAndActivity();}
+            default -> throw new IllegalStateException("wrong enum for getMappedSectorHelper");
+        }
     }
 }
